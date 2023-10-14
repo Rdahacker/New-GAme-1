@@ -1,0 +1,95 @@
+import pygame
+import random
+
+# Initialize Pygame
+pygame.init()
+
+# Constants
+WIDTH, HEIGHT = 800, 600
+WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+BALL_SPEED = [7, 7]
+PADDLE_SPEED = 10
+
+# Create the game window
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Simple Pong Game")
+
+# Initialize the ball and paddles
+ball = pygame.Rect(WIDTH // 2 - 15, HEIGHT // 2 - 15, 30, 30)
+player_paddle = pygame.Rect(WIDTH - 20, HEIGHT // 2 - 50, 10, 100)
+opponent_paddle = pygame.Rect(10, HEIGHT // 2 - 50, 10, 100)
+
+# Initialize scores
+player_score = 0
+opponent_score = 0
+
+# Create the game clock
+clock = pygame.time.Clock()
+
+# Game loop
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Move the player's paddle
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_DOWN] and player_paddle.bottom < HEIGHT:
+        player_paddle.y += PADDLE_SPEED
+    if keys[pygame.K_UP] and player_paddle.top > 0:
+        player_paddle.y -= PADDLE_SPEED
+
+    # Move the opponent's paddle
+    if opponent_paddle.top < ball.y:
+        opponent_paddle.y += PADDLE_SPEED
+    if opponent_paddle.bottom > ball.y:
+        opponent_paddle.y -= PADDLE_SPEED
+
+    # Move the ball
+    ball.x += BALL_SPEED[0]
+    ball.y += BALL_SPEED[1]
+
+    # Ball collisions
+    if ball.top <= 0 or ball.bottom >= HEIGHT:
+        BALL_SPEED[1] = -BALL_SPEED[1]
+
+    if ball.colliderect(player_paddle) or ball.colliderect(opponent_paddle):
+        BALL_SPEED[0] = -BALL_SPEED[0]
+
+    if ball.left <= 0:
+        # Player scores a point
+        player_score += 1
+        ball = pygame.Rect(WIDTH // 2 - 15, HEIGHT // 2 - 15, 30, 30)
+        BALL_SPEED[0] = -BALL_SPEED[0]
+
+    if ball.right >= WIDTH:
+        # Opponent scores a point
+        opponent_score += 1
+        ball = pygame.Rect(WIDTH // 2 - 15, HEIGHT // 2 - 15, 30, 30)
+        BALL_SPEED[0] = -BALL_SPEED[0]
+
+    # Clear the screen
+    screen.fill(WHITE)
+
+    # Draw the paddles and ball
+    pygame.draw.rect(screen, BLUE, player_paddle)
+    pygame.draw.rect(screen, BLUE, opponent_paddle)
+    pygame.draw.ellipse(screen, BLUE, ball)
+
+    # Display scores
+    font = pygame.font.Font(None, 36)
+    player_text = font.render(f"Player: {player_score}", True, BLUE)
+    opponent_text = font.render(f"Opponent: {opponent_score}", True, BLUE)
+    screen.blit(player_text, (WIDTH - 180, 10))
+    screen.blit(opponent_text, (20, 10))
+
+    # Update the display
+    pygame.display.flip()
+
+    # Control the game speed
+    clock.tick(60)
+
+# Quit Pygame
+pygame.quit()
